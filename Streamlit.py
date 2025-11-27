@@ -59,5 +59,7 @@ if st.button("Analisar Emoções", type="primary"):
             else:
                  st.subheader("Resultado da Análise de Imagem")
                  
-            # ESPAÇO PARA LÓGICA DE CLASSIFICAÇÃO DE IMAGEM
+            facial_pipe = pipeline("image-classification", model="dima806/facial_emotions_image_detection")
+
+            facial_pipe(imagem_upload)
             st.success("Imagem carregada com sucesso para análise!")
