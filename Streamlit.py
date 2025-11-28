@@ -64,14 +64,14 @@ def traduzir_texto(pipe, input_texto):
 
 st.subheader("Entrada de Texto")
 texto_entrada = st.text_area(
-    "Insira o Texto para Análise (Opcional):", 
+    "Insira o Texto para Análise:", 
     height=150, 
     placeholder="Digite seu texto aqui em Português..."
 )
 
 st.subheader("Entrada de Imagem")
 imagem_upload = st.file_uploader(
-    "Carregue uma Imagem (PNG, JPG, JPEG, WEBP) (Opcional):", 
+    "Carregue uma Imagem (PNG, JPG, JPEG, WEBP):", 
     type=['png', 'jpg', 'jpeg', 'webp']
 )
 
