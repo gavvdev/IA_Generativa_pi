@@ -1,2 +1,8 @@
+# ambientes virtuais
 /venv
 /.venv
+
+# diretórios __pycache__
+components/__pycache__
+services/__pycache__
+config/__pycache__
