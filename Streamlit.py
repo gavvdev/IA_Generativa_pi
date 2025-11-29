@@ -12,6 +12,7 @@ from config.settings import UI, MESSAGES
 from services.model_loader import load_all_models
 from services.text_processor import analyze_text_emotion
 from services.image_processor import analyze_facial_emotion
+from services.llm_combiner import load_llm_model, analyze_with_local_llm
 from components.inputs import collect_inputs
 from components.results import render_results_tabs
 
@@ -56,23 +57,18 @@ def render_footer() -> None:
 
 def main() -> None:
     """Função principal da aplicação."""
-    # Configuração da página (DEVE ser o primeiro comando Streamlit)
-    st.set_page_config(page_title=UI.PAGE_TITLE)
-    
-    # Carrega estilos
+    st.set_page_config(page_title=UI.PAGE_TITLE, layout="wide")
     load_css()
     
-    # Header
     st.title(UI.APP_TITLE)
     st.write(UI.APP_DESCRIPTION)
     
     # Carrega modelos
     translation_pipe, text_emotion_pipe, facial_emotion_pipe = load_all_models()
+    llm_pipe = load_llm_model()
     
-    # Coleta entradas
     inputs = collect_inputs()
     
-    # Botão de análise
     if st.button("Analisar Emoções", type="primary"):
         if not inputs.has_text and not inputs.has_image:
             st.error(MESSAGES.NO_INPUT_ERROR)
@@ -80,6 +76,7 @@ def main() -> None:
         
         text_result = None
         image_result = None
+        llm_analysis = None
         
         # Processa texto
         if inputs.has_text:
@@ -100,10 +97,17 @@ def main() -> None:
                     inputs.use_grayscale
                 )
         
-        # Exibe resultados
-        render_results_tabs(text_result, image_result, inputs.use_grayscale)
+        # Análise combinada com LLM (apenas se tiver texto E imagem)
+        if text_result and image_result:
+            with st.spinner("Gerando análise integrada..."):
+                llm_analysis = analyze_with_local_llm(
+                    llm_pipe,
+                    text_result,
+                    image_result
+                )
+        
+        render_results_tabs(text_result, image_result, inputs.use_grayscale, llm_analysis)
     
-    # Rodapé
     render_footer()
 
 
