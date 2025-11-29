@@ -3,6 +3,36 @@ from transformers import pipeline
 from PIL import Image
 from io import BytesIO
 import base64
+st.markdown("""
+<style>
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background-color: #262730;
+        padding: 12px;
+        border-radius: 12px;
+        margin-top: 50px
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        padding: 12px 28px;
+        background-color: #3d3d4d;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        color: white !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #ff4b4b !important;
+        color: white !important;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #4d4d5d;
+    }
+    .stTabs [aria-selected="true"]:hover {
+        background-color: #ff6b6b !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -19,6 +49,8 @@ def load_models():
     """
     otimização de desempenho).
     """
+
+
     
     with st.spinner('Carregando modelos de IA...'):
         # 1. Modelo de Tradução PT -> EN
@@ -59,6 +91,17 @@ def traduzir_texto(pipe, input_texto):
     )
     return output[0]['translation_text']
 
+def preprocessar_imagem_grayscale(image):
+    """
+    Converte a imagem para escala de cinza e de volta para RGB.
+    Isso ajuda o modelo a focar nas características faciais,
+    removendo informação de cor que pode ser ruído.
+    """
+    # Converte para escala de cinza (modo 'L' = luminância)
+    grayscale = image.convert('L')
+    # Converte de volta para RGB (3 canais) pois o modelo espera esse formato
+    grayscale_rgb = grayscale.convert('RGB')
+    return grayscale_rgb
 
 # --- ENTRADAS DA INTERFACE ---
 
@@ -75,6 +118,8 @@ imagem_upload = st.file_uploader(
     type=['png', 'jpg', 'jpeg', 'webp']
 )
 
+usar_grayscale = st.checkbox("Usar pré-processamento em escala de cinza", value=False)
+
 st.markdown("---") 
 
 # --- LÓGICA DE PROCESSAMENTO ---
@@ -87,59 +132,119 @@ if st.button("Analisar Emoções", type="primary"):
     if not analisar_texto and not analisar_imagem:
         st.error("Por favor, insira texto ou carregue uma imagem para iniciar a análise.")
         st.stop()
-        
-    # Lógica de Análise de Texto
+    
+    # Variáveis para armazenar resultados
+    resultado_texto = None
+    resultado_imagem = None
+    
+    # --- Processamento do Texto ---
     if analisar_texto:
         with st.spinner("Traduzindo e classificando texto..."):
-            
-            # 1. Tradução PT -> EN
             texto_traduzido = traduzir_texto(translation_pipe, texto_entrada)
-            
-            # 2. Análise de Emoção
             resultado_emocao = roberta_pipe(texto_traduzido)[0][0]
-            
-            # 3. Formatar saída
             emocao_principal = resultado_emocao['label']
             pontuacao = resultado_emocao['score'] * 100
-            
-            st.subheader("Resultado da Análise de Texto")
-            st.info(f"Texto original (PT): **{texto_entrada}**")
-            st.info(f"Texto traduzido (EN): *{texto_traduzido}*")
-            st.success(f"Emoção Detectada: **{emocao_principal.upper()}** (Confiança: {pontuacao:.2f}%)")
+            resultado_texto = {
+                'original': texto_entrada,
+                'traduzido': texto_traduzido,
+                'emocao': emocao_principal,
+                'pontuacao': pontuacao
+            }
     
-    # Separador, caso ambas as análises existam
-    if analisar_texto and analisar_imagem:
-        st.markdown("---")
-
-    # Lógica de Análise de Imagem (Roda se a imagem existir)
+    # --- Processamento da Imagem ---
     if analisar_imagem:
-        if not analisar_texto:
-            st.subheader("Resultado da Análise de Imagem")
-        else:
-            st.subheader("Resultado da Análise de Imagem")
-        
-        # Cria um placeholder para o resultado da IA acima da imagem
-        placeholder_ia_imagem = st.empty() 
-        
         with st.spinner("Analisando emoções na imagem..."):
-            
-            # 1. Preparar Imagem (converter bytes de upload para objeto PIL Image)
             image_bytes = imagem_upload.getvalue()
             image = Image.open(BytesIO(image_bytes))
             
-            # 2. Análise Facial
-            resultado_facial = facial_pipe(image)[0]
+            if usar_grayscale:
+                image_processada = preprocessar_imagem_grayscale(image)
+            else:
+                image_processada = image
             
-            # 3. Formatar saída
+            resultado_facial = facial_pipe(image_processada)[0]
             emocao_facial = resultado_facial['label']
             pontuacao_facial = resultado_facial['score'] * 100
-        
-        # Exibição da Imagem (Abaixo do placeholder)
-        st.image(
-            image, 
-            caption=f'Imagem Carregada: {imagem_upload.name}', 
-            use_container_width=True
-        )
-        
-        # Preenchendo o espaço reservado com o resultado
-        placeholder_ia_imagem.success(f"Emoção Facial Detectada: **{emocao_facial.upper()}** (Confiança: {pontuacao_facial:.2f}%)")
+            resultado_imagem = {
+                'image': image,
+                'image_processada': image_processada,
+                'emocao': emocao_facial,
+                'pontuacao': pontuacao_facial,
+                'nome': imagem_upload.name
+            }
+    
+    # --- Exibição em Abas ---
+    tab_texto, tab_imagem, tab_combinado = st.tabs(["Texto", "Imagem", "Combinado"])
+    
+    with tab_texto:
+        if resultado_texto:
+            st.subheader("Resultado da Análise de Texto")
+            st.info(f"Texto original (PT): **{resultado_texto['original']}**")
+            st.info(f"Texto traduzido (EN): *{resultado_texto['traduzido']}*")
+            st.success(f"Emoção Detectada: **{resultado_texto['emocao'].upper()}** (Confiança: {resultado_texto['pontuacao']:.2f}%)")
+        else:
+            st.warning("Nenhum texto foi inserido para análise.")
+    
+    with tab_imagem:
+        if resultado_imagem:
+            st.subheader("Resultado da Análise de Imagem")
+            st.success(f"Emoção Facial Detectada: **{resultado_imagem['emocao'].upper()}** (Confiança: {resultado_imagem['pontuacao']:.2f}%)")
+            
+            if usar_grayscale:
+                st.image(resultado_imagem['image_processada'], caption=f"Imagem Processada (Grayscale): {resultado_imagem['nome']}", use_container_width=True)
+            
+            st.image(resultado_imagem['image'], caption=f"Imagem Original: {resultado_imagem['nome']}", use_container_width=True)
+        else:
+            st.warning("Nenhuma imagem foi carregada para análise.")
+    
+    with tab_combinado:
+        if resultado_texto and resultado_imagem:
+            st.subheader("Resultado Combinado")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("### Texto")
+                st.info(f"**{resultado_texto['emocao'].upper()}** ({resultado_texto['pontuacao']:.2f}%)")
+            
+            with col2:
+                st.markdown("### Imagem")
+                st.info(f"**{resultado_imagem['emocao'].upper()}** ({resultado_imagem['pontuacao']:.2f}%)")
+            
+            st.markdown("---")
+            st.image(resultado_imagem['image'], caption=resultado_imagem['nome'], use_container_width=True)
+        else:
+            st.warning("Insira texto E imagem para ver o resultado combinado.")
+
+# --- RODAPÉ ---
+st.markdown(
+    """
+    <style>
+        .footer-full {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #111827;
+            color: #9ca3af;
+            text-align: center;
+            padding: 0.6rem 0;
+            font-size: 0.8rem;
+            z-index: 9999;
+        }
+        .footer-full a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        .footer-full a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <div class="footer-full">
+        Projeto <strong>Classificador de Emoções com IA</strong> ·
+        Desenvolvido em Python + Streamlit · Modelos Hugging Face ·
+        <a href="https://github.com/gavvdev/IA_Generativa_pi" target="_blank">Ver código no GitHub</a>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
