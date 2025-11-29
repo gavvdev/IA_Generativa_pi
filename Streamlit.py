@@ -1,145 +1,111 @@
+"""
+Classificador de Emoções - Aplicação Principal.
+
+Análise de emoções em texto (português) e imagens faciais
+utilizando modelos de IA da Hugging Face.
+"""
+from pathlib import Path
+
 import streamlit as st
-from transformers import pipeline
-from PIL import Image
-from io import BytesIO
-import base64
 
-# --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(
-    page_title="Classificador de Emoções"
-)
-
-st.title("Classificador de Emoções (IA)")
-st.write("Insira o Texto e/ou carregue uma Imagem para análise de emoções.")
-
-# --- INICIALIZAÇÃO E CACHE DE MODELOS ---
-
-@st.cache_resource
-def load_models():
-    """
-    otimização de desempenho).
-    """
-    
-    with st.spinner('Carregando modelos de IA...'):
-        # 1. Modelo de Tradução PT -> EN
-        translation_pipe = pipeline(
-            "translation", 
-            model="unicamp-dl/translation-pt-en-t5"
-        )
-        
-        # 2. Modelo de Classificação de Emoções de Texto (RoBERTa - funciona apenas em EN)
-        roberta_pipe = pipeline(
-            "text-classification", 
-            model="SamLowe/roberta-base-go_emotions", 
-            top_k=1 
-        )
-        
-        # 3. Modelo de Reconhecimento Facial de Emoções (Image Classification)
-        facial_pipe = pipeline(
-            "image-classification", 
-            model="dima806/facial_emotions_image_detection", 
-            top_k=1
-        )
-        
-    return translation_pipe, roberta_pipe, facial_pipe
-
-# Carrega os modelos uma vez na inicialização
-translation_pipe, roberta_pipe, facial_pipe = load_models()
+from config.settings import UI, MESSAGES
+from services.model_loader import load_all_models
+from services.text_processor import analyze_text_emotion
+from services.image_processor import analyze_facial_emotion
+from components.inputs import collect_inputs
+from components.results import render_results_tabs
 
 
-def traduzir_texto(pipe, input_texto):
-    """Traduz o texto de Português para Inglês usando o pipeline T5."""
-    texto_com_comando = f"translate Portuguese to English: {input_texto}"
-    
-    output = pipe(
-        texto_com_comando,
-        src_lang='portuguese',
-        tgt_lang='english',
-        max_length=400
+def load_css() -> None:
+    """Carrega estilos CSS customizados."""
+    css_path = Path(__file__).parent / "styles" / "custom.css"
+    if css_path.exists():
+        st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
+
+
+def render_footer() -> None:
+    """Renderiza rodapé da aplicação."""
+    st.markdown(
+        """
+        <div class="footer-full">
+            <div class="footer-container">
+                <div class="footer-info">
+                    <div class="footer-section">
+                        <h5>Contato</h5>
+                        <p>(81) 93234-2312</p>
+                    </div>
+                    <div class="footer-section">
+                        <h5>Suporte</h5>
+                        <p>Reporte erros</p>
+                    </div>
+                </div>
+                <div class="footer-brand">
+                    <strong>Classificador de Emoções</strong> · Python + Streamlit<br>
+                        <a href="https://github.com/gavvdev/IA_Generativa_pi" target="_blank" style="display: inline-flex; align-items: center;">
+                        <svg height="16" width="16" viewBox="0 0 16 16" style="margin-right: 6px; fill: currentColor;">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                        </svg>
+                        Ver código no GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-    return output[0]['translation_text']
 
-
-# --- ENTRADAS DA INTERFACE ---
-
-st.subheader("Entrada de Texto")
-texto_entrada = st.text_area(
-    "Insira o Texto para Análise:", 
-    height=150, 
-    placeholder="Digite seu texto aqui em Português..."
-)
-
-st.subheader("Entrada de Imagem")
-imagem_upload = st.file_uploader(
-    "Carregue uma Imagem (PNG, JPG, JPEG, WEBP):", 
-    type=['png', 'jpg', 'jpeg', 'webp']
-)
-
-st.markdown("---") 
-
-# --- LÓGICA DE PROCESSAMENTO ---
-
-analisar_texto = bool(texto_entrada)
-analisar_imagem = (imagem_upload is not None)
-
-if st.button("Analisar Emoções", type="primary"):
+def main() -> None:
+    """Função principal da aplicação."""
+    # Configuração da página (DEVE ser o primeiro comando Streamlit)
+    st.set_page_config(page_title=UI.PAGE_TITLE)
     
-    if not analisar_texto and not analisar_imagem:
-        st.error("Por favor, insira texto ou carregue uma imagem para iniciar a análise.")
-        st.stop()
-        
-    # Lógica de Análise de Texto
-    if analisar_texto:
-        with st.spinner("Traduzindo e classificando texto..."):
-            
-            # 1. Tradução PT -> EN
-            texto_traduzido = traduzir_texto(translation_pipe, texto_entrada)
-            
-            # 2. Análise de Emoção
-            resultado_emocao = roberta_pipe(texto_traduzido)[0][0]
-            
-            # 3. Formatar saída
-            emocao_principal = resultado_emocao['label']
-            pontuacao = resultado_emocao['score'] * 100
-            
-            st.subheader("Resultado da Análise de Texto")
-            st.info(f"Texto original (PT): **{texto_entrada}**")
-            st.info(f"Texto traduzido (EN): *{texto_traduzido}*")
-            st.success(f"Emoção Detectada: **{emocao_principal.upper()}** (Confiança: {pontuacao:.2f}%)")
+    # Carrega estilos
+    load_css()
     
-    # Separador, caso ambas as análises existam
-    if analisar_texto and analisar_imagem:
-        st.markdown("---")
+    # Header
+    st.title(UI.APP_TITLE)
+    st.write(UI.APP_DESCRIPTION)
+    
+    # Carrega modelos
+    translation_pipe, text_emotion_pipe, facial_emotion_pipe = load_all_models()
+    
+    # Coleta entradas
+    inputs = collect_inputs()
+    
+    # Botão de análise
+    if st.button("Analisar Emoções", type="primary"):
+        if not inputs.has_text and not inputs.has_image:
+            st.error(MESSAGES.NO_INPUT_ERROR)
+            st.stop()
+        
+        text_result = None
+        image_result = None
+        
+        # Processa texto
+        if inputs.has_text:
+            with st.spinner(MESSAGES.TRANSLATING):
+                text_result = analyze_text_emotion(
+                    translation_pipe,
+                    text_emotion_pipe,
+                    inputs.text
+                )
+        
+        # Processa imagem
+        if inputs.has_image:
+            with st.spinner(MESSAGES.ANALYZING_IMAGE):
+                image_result = analyze_facial_emotion(
+                    facial_emotion_pipe,
+                    inputs.image_file.getvalue(),
+                    inputs.image_file.name,
+                    inputs.use_grayscale
+                )
+        
+        # Exibe resultados
+        render_results_tabs(text_result, image_result, inputs.use_grayscale)
+    
+    # Rodapé
+    render_footer()
 
-    # Lógica de Análise de Imagem (Roda se a imagem existir)
-    if analisar_imagem:
-        if not analisar_texto:
-            st.subheader("Resultado da Análise de Imagem")
-        else:
-            st.subheader("Resultado da Análise de Imagem")
-        
-        # Cria um placeholder para o resultado da IA acima da imagem
-        placeholder_ia_imagem = st.empty() 
-        
-        with st.spinner("Analisando emoções na imagem..."):
-            
-            # 1. Preparar Imagem (converter bytes de upload para objeto PIL Image)
-            image_bytes = imagem_upload.getvalue()
-            image = Image.open(BytesIO(image_bytes))
-            
-            # 2. Análise Facial
-            resultado_facial = facial_pipe(image)[0]
-            
-            # 3. Formatar saída
-            emocao_facial = resultado_facial['label']
-            pontuacao_facial = resultado_facial['score'] * 100
-        
-        # Exibição da Imagem (Abaixo do placeholder)
-        st.image(
-            image, 
-            caption=f'Imagem Carregada: {imagem_upload.name}', 
-            use_container_width=True
-        )
-        
-        # Preenchendo o espaço reservado com o resultado
-        placeholder_ia_imagem.success(f"Emoção Facial Detectada: **{emocao_facial.upper()}** (Confiança: {pontuacao_facial:.2f}%)")
+
+if __name__ == "__main__":
+    main()
