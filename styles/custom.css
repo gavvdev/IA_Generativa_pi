@@ -69,7 +69,7 @@
 .footer-section {
     display: flex;
     flex-direction: column;
-    gap: 0.10rem;
+    gap: 0.1rem;
 }
 
 .footer-section h5 {
