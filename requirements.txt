@@ -3,3 +3,4 @@ torch
 Pillow
 Image
 transformers
+google-genai
