@@ -32,6 +32,12 @@ def render_image_result(result: Optional[ImageResult], show_grayscale: bool) -> 
             f"(Confiança: {result.confidence:.2f}%)"
         )
         
+        st.image(
+            result.original_image,
+            caption=f"Imagem Original: {result.filename}",
+            use_container_width=True
+        )
+
         if show_grayscale:
             st.image(
                 result.processed_image,
@@ -39,11 +45,6 @@ def render_image_result(result: Optional[ImageResult], show_grayscale: bool) -> 
                 use_container_width=True
             )
         
-        st.image(
-            result.original_image,
-            caption=f"Imagem Original: {result.filename}",
-            use_container_width=True
-        )
     else:
         st.warning(MESSAGES.NO_IMAGE_WARNING)
 
