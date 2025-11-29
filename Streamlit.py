@@ -32,11 +32,18 @@ def render_footer() -> None:
             <div class="footer-container">
                 <div class="footer-info">
                     <div class="footer-section">
-                        <h5>Contato</h5>
-                        <p>(81) 93234-2312</p>
+                        <h5>Colaboradores</h5>
+                        <p>Carla Romero</p>
+                        <p>Gabriela Pires</p>
+                    </div>
+                    <div class="footer-section">
+                        <h5>Colaboradores</h5>
+                        <p>Lucas Emmanoel</p>
+                        <p>Vitor Marins</p>
                     </div>
                     <div class="footer-section">
                         <h5>Suporte</h5>
+                        <p>Entre em contato</p>
                         <p>Reporte erros</p>
                     </div>
                 </div>
