@@ -4,9 +4,6 @@
     box-sizing: border-box;
 }
 
-body{
-    height: 70rem;
-}
 /* Estilos das Tabs */
 .stTabs [data-baseweb="tab-list"] {
     gap: 10px;
@@ -120,7 +117,6 @@ html, body, [data-testid="stAppViewContainer"] {
     -ms-overflow-style: none; /* IE/Edge */
 }
 
-
 /* Cabeçalho */
 .header-full {
     width: 100vw;
@@ -176,4 +172,3 @@ html, body, [data-testid="stAppViewContainer"] {
     font-size: 0.85rem;
     color: #60a5fa;
 }
-
