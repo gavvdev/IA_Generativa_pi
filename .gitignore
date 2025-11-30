@@ -6,3 +6,6 @@
 components/__pycache__
 services/__pycache__
 config/__pycache__
+
+# variáveis de ambiente
+services/.env
