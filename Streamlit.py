@@ -12,7 +12,7 @@ from config.settings import UI, MESSAGES
 from services.model_loader import load_all_models
 from services.text_processor import analyze_text_emotion
 from services.image_processor import analyze_facial_emotion
-from services.llm_combiner import load_llm_model, analyze_with_local_llm
+from services.llm_combiner import analyze_with_local_llm
 from components.inputs import collect_inputs
 from components.results import render_results_tabs
 
@@ -72,7 +72,6 @@ def main() -> None:
     
     # Carrega modelos
     translation_pipe, text_emotion_pipe, facial_emotion_pipe = load_all_models()
-    llm_pipe = load_llm_model()
     
     inputs = collect_inputs()
     
@@ -108,7 +107,6 @@ def main() -> None:
         if text_result and image_result:
             with st.spinner("Gerando análise integrada..."):
                 llm_analysis = analyze_with_local_llm(
-                    llm_pipe,
                     text_result,
                     image_result
                 )
