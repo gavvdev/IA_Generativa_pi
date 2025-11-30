@@ -168,7 +168,7 @@ def load_llm_model(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=0),
-            system_instruction="Você deverá analisar as emoções faciais de um indivíduo e a emoção da fala do mesmo, e então você deverá explicar a possivel explicação para a combinação dessas emoções.",),
+            system_instruction="Você deverá analisar as emoções faciais de um indivíduo e a emoção da fala do mesmo, e então você deverá explicar a possivel explicação para a combinação dessas emoções. Seja claro e conciso em sua resposta, explique tudo em um só parágrafo.",),
         contents=f'A emoção facial é "{image_em}" com confiança de "{image_conf}%". A emoção do texto é "{text_em}" com confiança de "{text_conf}%". O conteuro do do texto é: "{text_content}"'
     )
     return llm_response
