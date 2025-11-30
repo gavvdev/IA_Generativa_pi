@@ -162,9 +162,23 @@ py -m streamlit run Streamlit.py
 
 [![Contribuidores](https://img.shields.io/github/contributors/gavvdev/IA_Generativa_pi?color=blue)](https://github.com/gavvdev/IA_Generativa_pi/graphs/contributors)
 
-<a href="https://github.com/gavvdev/IA_Generativa_pi/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=gavvdev/IA_Generativa_pi" />
-</a>
+<div style="display: flex; gap: 20px;">
+  <a href="https://github.com/Carla-s-Romero">
+    <img src="https://wsrv.nl/?url=github.com/Carla-s-Romero.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Carla Romero" />
+  </a>
+
+  <a href="https://github.com/gavvdev">
+    <img src="https://wsrv.nl/?url=github.com/gavvdev.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Gabriela" />
+  </a>
+  
+  <a href="https://github.com/LucasEmmanoel06">
+    <img src="https://wsrv.nl/?url=github.com/LucasEmmanoel06.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Lucas Emmanoel" />
+  </a>
+  
+  <a href="https://github.com/VitorMarins">
+    <img src="https://wsrv.nl/?url=github.com/VitorMarins.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Vitor Marins" />
+  </a>
+</div>
 
 ---
 
