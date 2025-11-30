@@ -1,8 +1,20 @@
 """Serviço de combinação de resultados usando análise inteligente."""
 from dataclasses import dataclass
 from typing import Optional
-
+import os
 import streamlit as st
+
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_TOKEN")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY não encontrada no arquivo .env")
+
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 from .text_processor import TextResult
 from .image_processor import ImageResult
@@ -16,6 +28,7 @@ class CombinedAnalysis:
     summary: str
     interpretation: str
     consistency: str
+    llm_summary: str = "N/A"
 
 
 # Mapeamento de emoções para português e categorias
@@ -137,23 +150,51 @@ def _evaluate_consistency(
     return "❌ Divergente"
 
 
-def load_llm_model():
-    """Placeholder - não usa mais LLM externo."""
-    return None
+def load_llm_model(
+    text_result: Optional[TextResult],
+    image_result: Optional[ImageResult]
+):
+    """Carrega e executa o modelo LLM para análise combinada."""
+    if not text_result or not image_result:
+        return None
+    
+    text_em, _ = get_emotion_info(text_result.emotion)
+    image_em, _ = get_emotion_info(image_result.emotion)
+    text_conf = text_result.confidence
+    image_conf = image_result.confidence
+    text_content = text_result.original
+
+    llm_response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        config=types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+            system_instruction="Você deverá analisar as emoções faciais de um indivíduo e a emoção da fala do mesmo, e então você deverá explicar a possivel explicação para a combinação dessas emoções.",),
+        contents=f'A emoção facial é "{image_em}" com confiança de "{image_conf}%". A emoção do texto é "{text_em}" com confiança de "{text_conf}%". O conteuro do do texto é: "{text_content}"'
+    )
+    return llm_response
 
 
 def analyze_with_local_llm(
-    llm_pipe,  # Ignorado
     text_result: Optional[TextResult],
     image_result: Optional[ImageResult]
 ) -> CombinedAnalysis:
     """Analisa resultados usando lógica inteligente."""
     interpretation = generate_interpretation(text_result, image_result)
+
+    # Chama o LLM
+    llm_response = load_llm_model(text_result, image_result)
+
+    llm_summary = "N/A"
+    if llm_response and hasattr(llm_response, 'content'):
+        llm_summary = llm_response.text
+    elif llm_response and hasattr(llm_response, 'candidates'):
+        llm_summary = llm_response.candidates[0].content.parts[0].text if llm_response.candidates else "N/A"
     
     return CombinedAnalysis(
         text_emotion=text_result.emotion if text_result else "N/A",
         image_emotion=image_result.emotion if image_result else "N/A",
         summary=f"Texto: {text_result.emotion if text_result else 'N/A'} | Imagem: {image_result.emotion if image_result else 'N/A'}",
         interpretation=interpretation,
-        consistency=_evaluate_consistency(text_result, image_result)
+        consistency=_evaluate_consistency(text_result, image_result),
+        llm_summary=llm_summary
     )
