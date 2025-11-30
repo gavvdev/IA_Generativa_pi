@@ -12,7 +12,7 @@ load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_TOKEN")
 if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY não encontrada no arquivo .env")
+    raise ValueError("GEMINI_TOKEN não encontrada no arquivo .env")
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
