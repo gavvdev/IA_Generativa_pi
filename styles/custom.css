@@ -38,16 +38,18 @@
 
 /* Rodapé */
 .footer-full {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-bottom: 0 !important;
+    width: 100vw;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     color: #e2e8f0;
     padding: 1rem 2rem;
-    z-index: 9999;
     border-top: 1px solid #334155;
-    margin-top: 10rem;
+    margin-top: 3rem;
 }
 
 .footer-container {
@@ -58,12 +60,13 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+    padding-bottom: 0;
 }
 
 .footer-info {
     display: flex;
     gap: 5rem;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .footer-section {
@@ -84,6 +87,12 @@
     margin: 0;
     font-size: 0.875rem;
     color: #e2e8f0;
+}
+
+.footer-section a {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #60a5fa;
 }
 
 .footer-brand {
@@ -115,10 +124,16 @@
 html, body, [data-testid="stAppViewContainer"] {
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
+    margin: 0;
+    padding: 0;
 }
 
+[data-testid="stAppViewContainer"] > section {
+    padding-bottom: 0 !important;
+}
 
 /* Ou para ocupar toda a tela */
 .stMainBlockContainer {
     max-width: 60%;
+    padding-bottom: 0 !important;
 }
