@@ -44,11 +44,6 @@ def render_footer() -> None:
                         <a href="https://huggingface.co/SamLowe/roberta-base-go_emotions" target="_blank">Emoção em Texto</a>
                         <a href="https://huggingface.co/dima806/facial_emotions_image_detection" target="_blank">Emoção Facial</a>
                     </div>
-                    <div class="footer-section">
-                        <h5>Suporte</h5>
-                        <p>Entre em contato</p>
-                        <p>Reporte erros</p>
-                    </div>
                 </div>
                 <div class="footer-brand">
                     <strong>Classificador de Emoções</strong> · Python + Streamlit<br>
