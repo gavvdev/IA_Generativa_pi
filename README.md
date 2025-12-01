@@ -108,7 +108,7 @@ Caso não tenha uma chave de API, pode obter uma em https://aistudio.google.com/
 
 ### 5. Executar a aplicação usando o Streamlit
 ```bash
-py -m streamlit run Streamlit.py
+py -m streamlit run app.py
 ```
 Por fim, a aplicação deverá estar rodando localmente e estará acessível em http://localhost:8501
 
