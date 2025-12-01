@@ -7,22 +7,11 @@
 **Análise de sentimentos em texto e detecção de emoções faciais em imagens**
 
 <p>
-  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Streamlit-1.28+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit">
   <img src="https://img.shields.io/badge/🤗_Transformers-Powered-FFD21E?style=for-the-badge" alt="Transformers">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
 </p>
-
-<p>
-  <a href="#-funcionalidades">Funcionalidades</a> •
-  <a href="#-demonstração">Demo</a> •
-  <a href="#-instalação">Instalação</a> •
-  <a href="#-modelos-de-ia">Modelos</a> •
-  <a href="#-estrutura">Estrutura</a>
-</p>
-
----
-
 </div>
 
 ## ✨ Funcionalidades
@@ -53,14 +42,15 @@
 
 ## 🖥️ Como usar a interface
 
-- O usuário precisa digitar um Texto (opcional)
+- Escreva um texto à ser analisado
   - Digite um texto em Português na área de texto.
   - O sistema traduz o texto para Inglês e em seguida classifica a emoção principal.
 
-- Imagem (opcional)
+- Escolha uma imagem
   - Faça upload de uma imagem (.png, .jpg, .jpeg, .webp).
   - O sistema analisa o rosto na imagem e identifica a emoção predominante.
-- Botão "Analisar Emoções"
+
+- Aperte o Botão "Analisar Emoções"
   - Você pode:
     - Enviar apenas texto,
     - Enviar apenas imagem,
@@ -80,11 +70,11 @@ Os resultados são exibidos em seções separadas para texto e imagem e uma seç
 
 A aplicação carrega e mantém em cache três pipelines principais da biblioteca `transformers`:
 
-| Funcionalidade | Tarefa | Modelo |
-|----------------|--------|--------|
-| Tradução PT → EN | `translation` | `unic'amp-dl/translation-pt-en-t5` |
-| Classificação de emoções em texto | `text-classification` | `SamLowe/roberta-base-go_emotions` |
-| Detecção de emoções faciais | `image-classification` | `dima806/facial_emotions_image_detection` |
+| Funcionalidade | Modelo |
+|----------------|--------|
+| Tradução PT → EN | https://huggingface.co/unicamp-dl/translation-pt-en-t5 |
+| Classificação de emoções em texto | https://huggingface.co/SamLowe/roberta-base-go_emotions |
+| Detecção de emoções faciais | https://huggingface.co/dima806/facial_emotions_image_detection |
 
 > 💡 **Performance:** Os modelos são carregados uma única vez usando `@st.cache_resource`, garantindo respostas rápidas após o carregamento inicial.
 
@@ -93,7 +83,8 @@ A aplicação carrega e mantém em cache três pipelines principais da bibliotec
 ### 1. Clonar o repositório
 
 ```bash
-git clone [https://github.com/gavvdev/IA_Generativa_pi.git](https://github.com/gavvdev/IA_Generativa_pi.git)
+git clone https://github.com/gavvdev/IA_Generativa_pi.git
+cd .\IA_Generativa_pi\
 ```
 
 ### 2. Criar e ativar o ambiente virtual
@@ -104,14 +95,22 @@ python -m venv .venv
 
 ### 3. Instalar dependências
 ```bash
-pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Executar a aplicação usando o Streamlit
+### 4. Configurar Variáveis de Ambiente
+```bash
+copy .env.example .env
+```
+Edite o arquivo .env e insira sua chave de API do Gemini.
+
+Caso não tenha uma chave de API, pode obter uma em https://aistudio.google.com/app/apikey
+
+### 5. Executar a aplicação usando o Streamlit
 ```bash
 py -m streamlit run Streamlit.py
 ```
+Por fim, a aplicação deverá estar rodando localmente e estará acessível em http://localhost:8501
 
 ## 📁 Estrutura do Projeto
 ```
@@ -138,7 +137,7 @@ py -m streamlit run Streamlit.py
 │
 ├── 📄 Streamlit.py              # Ponto de entrada
 ├── 📋 requirements.txt          # Dependências
-└── 📖 README.md
+└── 📖 README.md                 # Documentação
 ```
 
 ## 🧾 Descrição dos Módulos
