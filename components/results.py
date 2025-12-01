@@ -35,14 +35,14 @@ def render_image_result(result: Optional[ImageResult], show_grayscale: bool) -> 
         st.image(
             result.original_image,
             caption=f"Imagem Original: {result.filename}",
-            use_container_width=True
+            width='stretch'
         )
 
         if show_grayscale:
             st.image(
                 result.processed_image,
                 caption=f"Imagem Processada (Grayscale): {result.filename}",
-                use_container_width=True
+                width='stretch'
             )
         
     else:
