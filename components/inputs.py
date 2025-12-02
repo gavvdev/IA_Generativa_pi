@@ -45,8 +45,8 @@ def render_image_input() -> Optional[object]:
 
 def render_options() -> Tuple[bool, bool]:
     """Renderiza opções de processamento."""
-    grayscale = st.checkbox("Usar pré-processamento em escala de cinza", value=False)
-    use_gemini = st.checkbox("Usar análise integrada com Gemini (IA)", value=True)
+    grayscale = st.checkbox("Usar pré-processamento em escala de cinza", value=True)
+    use_gemini = st.checkbox("Usar análise integrada com Gemini (IA)", value=False)
     return grayscale, use_gemini
 
 
