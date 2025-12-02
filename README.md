@@ -214,5 +214,5 @@ Ponto de entrada da aplicação. Configura a página, carrega CSS, orquestra o f
 <p align="center">
 ⭐ Gostou do projeto? Deixe uma estrela!
               <br>
-     Made with ❤️ and 🤖 AI
+     Made with ❤️ and 🤖 AI | Este projeto utiliza a MIT License.
 </p>
