@@ -11,10 +11,10 @@ from google.genai import types
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_TOKEN")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_TOKEN não encontrada no arquivo .env")
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = None
+if GEMINI_API_KEY:
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
 from .text_processor import TextResult
 from .image_processor import ImageResult
@@ -31,7 +31,6 @@ class CombinedAnalysis:
     llm_summary: str = "N/A"
 
 
-# Mapeamento de emoções para português e categorias
 EMOTION_MAP = {
     # Positivas
     "joy": ("Alegria", "positiva"),
@@ -46,8 +45,6 @@ EMOTION_MAP = {
     "approval": ("Aprovação", "positiva"),
     "caring": ("Carinho", "positiva"),
     "desire": ("Desejo", "positiva"),
-    "excitement": ("Entusiasmo", "positiva"),
-    "gratitude": ("Gratidão", "positiva"),
     "nervousness": ("Nervosismo", "positiva"),
     "pride": ("Orgulho", "positiva"),
     "realization": ("Realização", "positiva"),
@@ -62,11 +59,8 @@ EMOTION_MAP = {
     "disappointment": ("Decepção", "negativa"),
     "annoyance": ("Irritação", "negativa"),
     "grief": ("Luto", "negativa"),
-    "annoyance": ("Irritação", "negativa"),
     "disapproval": ("Desaprovação", "negativa"),
-    "disgust": ("Desgosto", "negativa"),
     "embarrassment": ("Vergonha", "negativa"),
-    "fear": ("Medo", "negativa"),
     "remorse": ("Remorso", "negativa"),
     # Neutras
     "neutral": ("Neutra", "neutra"),
@@ -95,7 +89,6 @@ def generate_interpretation(
     text_conf = text_result.confidence
     image_conf = image_result.confidence
     
-    # Mesma emoção
     if text_result.emotion.lower() == image_result.emotion.lower():
         return (
             f"✨ **Emoções consistentes**: Tanto o texto quanto a expressão facial "
@@ -104,7 +97,6 @@ def generate_interpretation(
             f"(Texto: {text_conf:.0f}%, Imagem: {image_conf:.0f}%)."
         )
     
-    # Mesma categoria (ex: joy/happy)
     if text_cat == image_cat:
         return (
             f"🔄 **Emoções similares**: O texto expressa **{text_em}** ({text_conf:.0f}%) "
@@ -112,7 +104,6 @@ def generate_interpretation(
             f"Ambas são emoções {text_cat}s, indicando coerência no estado emocional geral."
         )
     
-    # Categorias diferentes
     if text_cat == "positiva" and image_cat == "negativa":
         return (
             f"⚠️ **Divergência emocional**: O texto sugere **{text_em}** (emoção positiva), "
@@ -129,7 +120,6 @@ def generate_interpretation(
             f"do texto não reflete seu estado emocional real."
         )
     
-    # Neutro envolvido
     if text_cat == "neutra" or image_cat == "neutra":
         return (
             f"📊 **Análise mista**: O texto indica **{text_em}** ({text_conf:.0f}%) "
@@ -138,7 +128,6 @@ def generate_interpretation(
             f"ou ambíguo."
         )
     
-    # Fallback
     return (
         f"📋 **Resumo**: Texto detectou **{text_em}** ({text_conf:.0f}%) e "
         f"imagem detectou **{image_em}** ({image_conf:.0f}%)."
@@ -173,6 +162,9 @@ def load_llm_model(
     if not text_result or not image_result:
         return None
     
+    if not client:
+        raise ValueError("GEMINI_TOKEN não encontrada no arquivo .env")
+    
     text_em, _ = get_emotion_info(text_result.emotion)
     image_em, _ = get_emotion_info(image_result.emotion)
     text_conf = text_result.confidence
@@ -183,8 +175,9 @@ def load_llm_model(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(thinking_budget=0),
-            system_instruction="Você deverá analisar as emoções faciais de um indivíduo e a emoção da fala do mesmo, e então você deverá explicar a possivel explicação para a combinação dessas emoções. Seja claro e conciso em sua resposta, explique tudo em um só parágrafo.",),
-        contents=f'A emoção facial é "{image_em}" com confiança de "{image_conf}%". A emoção do texto é "{text_em}" com confiança de "{text_conf}%". O conteuro do do texto é: "{text_content}"'
+            system_instruction="Você deverá analisar as emoções faciais de um indivíduo e a emoção da fala do mesmo, e então você deverá explicar a possivel explicação para a combinação dessas emoções. Seja claro e conciso em sua resposta, explique tudo em um só parágrafo.",
+        ),
+        contents=f'A emoção facial é "{image_em}" com confiança de "{image_conf}%". A emoção do texto é "{text_em}" com confiança de "{text_conf}%". O conteúdo do texto é: "{text_content}"'
     )
     return llm_response
 
@@ -193,10 +186,9 @@ def analyze_with_local_llm(
     text_result: Optional[TextResult],
     image_result: Optional[ImageResult]
 ) -> CombinedAnalysis:
-    """Analisa resultados usando lógica inteligente."""
+    """Analisa resultados usando lógica inteligente + Gemini."""
     interpretation = generate_interpretation(text_result, image_result)
 
-    # Chama o LLM
     llm_response = load_llm_model(text_result, image_result)
 
     llm_summary = "N/A"
@@ -212,4 +204,21 @@ def analyze_with_local_llm(
         interpretation=interpretation,
         consistency=_evaluate_consistency(text_result, image_result),
         llm_summary=llm_summary
+    )
+
+
+def analyze_without_llm(
+    text_result: Optional[TextResult],
+    image_result: Optional[ImageResult]
+) -> CombinedAnalysis:
+    """Analisa resultados usando apenas lógica local (sem Gemini)."""
+    interpretation = generate_interpretation(text_result, image_result)
+    
+    return CombinedAnalysis(
+        text_emotion=text_result.emotion if text_result else "N/A",
+        image_emotion=image_result.emotion if image_result else "N/A",
+        summary=f"Texto: {text_result.emotion if text_result else 'N/A'} | Imagem: {image_result.emotion if image_result else 'N/A'}",
+        interpretation=interpretation,
+        consistency=_evaluate_consistency(text_result, image_result),
+        llm_summary=""
     )

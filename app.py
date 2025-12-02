@@ -101,13 +101,14 @@ def main() -> None:
                     inputs.use_grayscale
                 )
         
-        # Análise combinada com LLM (apenas se tiver texto E imagem)
+         # Análise combinada (apenas se tiver texto E imagem)
         if text_result and image_result:
-            with st.spinner("Gerando análise integrada..."):
-                llm_analysis = analyze_with_local_llm(
-                    text_result,
-                    image_result
-                )
+            if inputs.use_gemini:
+                with st.spinner("Gerando análise integrada com Gemini..."):
+                    llm_analysis = analyze_with_local_llm(text_result, image_result)
+            else:
+                from services.llm_combiner import analyze_without_llm
+                llm_analysis = analyze_without_llm(text_result, image_result)
         
         render_results_tabs(text_result, image_result, inputs.use_grayscale, llm_analysis)
     

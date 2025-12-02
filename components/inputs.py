@@ -13,6 +13,7 @@ class UserInputs:
     text: str
     image_file: Optional[object]
     use_grayscale: bool
+    use_gemini: bool
     
     @property
     def has_text(self) -> bool:
@@ -42,16 +43,18 @@ def render_image_input() -> Optional[object]:
     )
 
 
-def render_options() -> bool:
+def render_options() -> Tuple[bool, bool]:
     """Renderiza opções de processamento."""
-    return st.checkbox("Usar pré-processamento em escala de cinza", value=False)
+    grayscale = st.checkbox("Usar pré-processamento em escala de cinza", value=False)
+    use_gemini = st.checkbox("Usar análise integrada com Gemini (IA)", value=True)
+    return grayscale, use_gemini
 
 
 def collect_inputs() -> UserInputs:
     """Coleta todas as entradas do usuário."""
     text = render_text_input()
     image = render_image_input()
-    grayscale = render_options()
+    grayscale, use_gemini = render_options()
     st.markdown("---")
     
-    return UserInputs(text=text, image_file=image, use_grayscale=grayscale)
+    return UserInputs(text=text, image_file=image, use_grayscale=grayscale, use_gemini=use_gemini)
