@@ -10,7 +10,7 @@ from google.genai import types
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_TOKEN")
+GEMINI_API_KEY = st.secrets["GEMINI_TOKEN"]
 
 client = None
 if GEMINI_API_KEY:
