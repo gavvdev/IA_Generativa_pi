@@ -51,7 +51,7 @@ def render_image_result(result: Optional[ImageResult], show_grayscale: bool) -> 
 
 def render_llm_analysis(analysis: CombinedAnalysis) -> None:
     """Renderiza análise do LLM."""
-    st.subheader("Análise Integrada por IA")
+    st.subheader("📑 Análise de Consistência")
     
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -60,11 +60,11 @@ def render_llm_analysis(analysis: CombinedAnalysis) -> None:
         st.metric("Emoção Imagem", analysis.image_emotion.upper())
     with col3:
         st.metric("Consistência", analysis.consistency)
-    
-    st.markdown("---")
-    st.markdown("### 💡 Interpretação")
     st.info(analysis.interpretation)
+
     if analysis.llm_summary:
+        st.markdown("---")
+        st.markdown("### 💡 Interpretação por LLM")
         st.info(f"🤖 **Análise do Gemini**: {analysis.llm_summary}")
 
 
