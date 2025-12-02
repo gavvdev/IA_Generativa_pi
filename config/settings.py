@@ -15,8 +15,8 @@ class ModelConfig:
 @dataclass(frozen=True)
 class UIConfig:
     """Configuração da interface do usuário."""
-    PAGE_TITLE: str = "Classificador de Emoções"
-    APP_TITLE: str = "Classificador de Emoções (IA)"
+    PAGE_TITLE: str = "Identificador de Emoções"
+    APP_TITLE: str = "Identificador de Emoções"
     APP_DESCRIPTION: str = "Insira o Texto e/ou carregue uma Imagem para análise de emoções."
     SUPPORTED_IMAGE_TYPES: tuple = ('png', 'jpg', 'jpeg', 'webp')
 
