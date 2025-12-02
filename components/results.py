@@ -64,7 +64,8 @@ def render_llm_analysis(analysis: CombinedAnalysis) -> None:
     st.markdown("---")
     st.markdown("### 💡 Interpretação")
     st.info(analysis.interpretation)
-    st.info(f"🤖 **Análise do LLM**: {analysis.llm_summary}")
+    if analysis.llm_summary:
+        st.info(f"🤖 **Análise do Gemini**: {analysis.llm_summary}")
 
 
 def render_results_tabs(
