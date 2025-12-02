@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🎭 Emotion Classifier AI
+# 🎭 Indetificador de Emoções
 
-### Classificador de Emoções com Inteligência Artificial
+### Indetificador de Emoções com Inteligência Artificial
 
 **Análise de sentimentos em texto e detecção de emoções faciais em imagens**
 
@@ -37,24 +37,37 @@
 
 </td>
 </tr>
+<tr>
+<td colspan="2">
+
+### 🤖 Análise Combinada com Gemini (Opcional)
+- Interpretação inteligente das emoções detectadas
+- Avaliação de consistência entre texto e imagem
+- Análise contextual usando Google Gemini 2.5 Flash
+
+</td>
+</tr>
 </table>
+
 
 
 ## 🖥️ Como usar a interface
 
-- Escreva um texto à ser analisado
-  - Digite um texto em Português na área de texto.
-  - O sistema traduz o texto para Inglês e em seguida classifica a emoção principal.
+1. **Escreva um texto à ser analisado**
+   - Digite um texto em Português na área de texto.
+   - O sistema traduz o texto para Inglês e em seguida classifica a emoção principal.
 
-- Escolha uma imagem
-  - Faça upload de uma imagem (.png, .jpg, .jpeg, .webp).
-  - O sistema analisa o rosto na imagem e identifica a emoção predominante.
+2. **Escolha uma imagem**
+   - Faça upload de uma imagem (.png, .jpg, .jpeg, .webp).
+   - O sistema analisa o rosto na imagem e identifica a emoção predominante.
 
-- Aperte o Botão "Analisar Emoções"
-  - Você pode:
-    - Enviar apenas texto,
-    - Enviar apenas imagem,
-    - Ou ambos ao mesmo tempo.
+3. **Configure as opções (opcional)**
+   - ☑️ **Escala de cinza**: Melhora a detecção focando nas características faciais.
+   - ☑️ **Análise com Gemini**: Gera interpretação integrada usando IA generativa.
+
+4. **Aperte o Botão "Analisar Emoções"**
+   - Você pode enviar apenas texto, apenas imagem, ou ambos ao mesmo tempo.
+   - A análise integrada com Gemini só é gerada quando texto **E** imagem são enviados.
 
 Se nada for enviado, a aplicação mostra uma mensagem de erro pedindo entrada.
 Os resultados são exibidos em seções separadas para texto e imagem e uma seção combinada das duas respostas, incluindo a emoção detectada e a confiança (%)
@@ -70,11 +83,13 @@ Os resultados são exibidos em seções separadas para texto e imagem e uma seç
 
 A aplicação carrega e mantém em cache três pipelines principais da biblioteca `transformers`:
 
+
 | Funcionalidade | Modelo |
 |----------------|--------|
-| Tradução PT → EN | https://huggingface.co/unicamp-dl/translation-pt-en-t5 |
-| Classificação de emoções em texto | https://huggingface.co/SamLowe/roberta-base-go_emotions |
-| Detecção de emoções faciais | https://huggingface.co/dima806/facial_emotions_image_detection |
+| Tradução PT → EN | [unicamp-dl/translation-pt-en-t5](https://huggingface.co/unicamp-dl/translation-pt-en-t5) |
+| Classificação de emoções em texto | [SamLowe/roberta-base-go_emotions](https://huggingface.co/SamLowe/roberta-base-go_emotions) |
+| Detecção de emoções faciais | [dima806/facial_emotions_image_detection](https://huggingface.co/dima806/facial_emotions_image_detection) |
+| Análise integrada (opcional) | [Google Gemini 2.5 Flash](https://ai.google.dev/) |
 
 > 💡 **Performance:** Os modelos são carregados uma única vez usando `@st.cache_resource`, garantindo respostas rápidas após o carregamento inicial.
 
@@ -104,13 +119,28 @@ copy .env.example .env
 ```
 Edite o arquivo .env e insira sua chave de API do Gemini.
 
-Caso não tenha uma chave de API, pode obter uma em https://aistudio.google.com/app/apikey
+Edite o arquivo .env (Localizado na pasta services) e insira sua chave de API do Gemini:
+
+```bash
+GEMINI_TOKEN="your_gemini_api_key_here"
+```
+
+>🔑 Caso não tenha uma chave de API, pode obter uma em:
+https://aistudio.google.com/app/apikey
 
 ### 5. Executar a aplicação usando o Streamlit
 ```bash
-py -m streamlit run app.py
+streamlit run app.py
 ```
 Por fim, a aplicação deverá estar rodando localmente e estará acessível em http://localhost:8501
+
+
+>Se o código apresentar erro, verifique se o arquivo está salvo com codificação UTF-16. Caso esteja, altere a codificação para UTF-8.
+Você pode criar um novo arquivo .env já com a codificação correta executando:
+> ```
+> Set-Content -Path ".env" -Value 'GEMINI_TOKEN="your_gemini_api_key_here"' -Encoding UTF8
+
+
 
 ## 📁 Estrutura do Projeto
 ```
@@ -135,47 +165,47 @@ Por fim, a aplicação deverá estar rodando localmente e estará acessível em 
 ├── 🎭 styles/
 │   └── custom.css              # Estilos customizados
 │
-├── 📄 Streamlit.py              # Ponto de entrada
+├── 📄 app.py              # Ponto de entrada
 ├── 📋 requirements.txt          # Dependências
 └── 📖 README.md                 # Documentação
 ```
 
-## 🧾 Descrição dos Módulos
+### [app.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/app.py:0:0-0:0)
+Ponto de entrada da aplicação. Configura a página, carrega CSS, orquestra o fluxo principal e renderiza o rodapé.
 
-#### [Streamlit.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/Streamlit.py:0:0-0:0)  →  Ponto de entrada da aplicação. Configura a página e orquestra o fluxo principal.
+### [components/](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/components:0:0-0:0)
+- **[inputs.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/components/inputs.py:0:0-0:0)** → Renderiza campos de entrada: área de texto, upload de imagem, checkboxes de opções (grayscale, Gemini)
+- **[results.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/components/results.py:0:0-0:0)** → Exibe resultados em abas (Texto, Imagem, Análise IA) com métricas e interpretações
 
-#### [components/](cci:7://file:///c:/Users/User/IA_Generativa_pi/components:0:0-0:0)
-- **[inputs.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/components/inputs.py:0:0-0:0)** → Renderiza campos de entrada: área de texto, upload de imagem e opções
-- **[results.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/components/results.py:0:0-0:0)** → Exibe resultados em abas com métricas e interpretações
+### [config/](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/config:0:0-0:0)
+- **[settings.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/config/settings.py:0:0-0:0)** → Configurações centralizadas: nomes dos modelos, configurações de UI e mensagens do sistema
 
-#### [config/](cci:7://file:///c:/Users/User/IA_Generativa_pi/config:0:0-0:0)
-- **[settings.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/config/settings.py:0:0-0:0)** → Configurações centralizadas: modelos, UI e mensagens do sistema
+### [services/](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/services:0:0-0:0)
+- **[model_loader.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/services/model_loader.py:0:0-0:0)** → Carrega e cacheia os pipelines de IA com `@st.cache_resource`
+- **[text_processor.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/services/text_processor.py:0:0-0:0)** → Traduz texto PT→EN e classifica emoções usando RoBERTa
+- **[image_processor.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/services/image_processor.py:0:0-0:0)** → Processa imagens, aplica grayscale opcional e detecta emoções faciais
+- **[llm_combiner.py](cci:7://file:///c:/Users/User/Downloads/IA_Generativa_pi/services/llm_combiner.py:0:0-0:0)** → Combina análises de texto e imagem, gera interpretação inteligente e integra com Gemini 2.5 Flash
 
-#### [services/](cci:7://file:///c:/Users/User/IA_Generativa_pi/services:0:0-0:0)
-- **[model_loader.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/services/model_loader.py:0:0-0:0)** - Carrega e cacheia os pipelines de IA
-- **[text_processor.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/services/text_processor.py:0:0-0:0)** - Traduz texto PT→EN e classifica emoções
-- **[image_processor.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/services/image_processor.py:0:0-0:0)** - Processa imagens e detecta emoções faciais
-- **[llm_combiner.py](cci:7://file:///c:/Users/User/IA_Generativa_pi/services/llm_combiner.py:0:0-0:0)** - Combina análises de texto e imagem com interpretação
 
 ## 👥 Colaboradores
 
 [![Contribuidores](https://img.shields.io/github/contributors/gavvdev/IA_Generativa_pi?color=blue)](https://github.com/gavvdev/IA_Generativa_pi/graphs/contributors)
 
-<div style="display: flex; gap: 20px;">
+<div style="display: flex; gap: 10px;">
   <a href="https://github.com/Carla-s-Romero">
-    <img src="https://wsrv.nl/?url=github.com/Carla-s-Romero.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Carla Romero" />
+    <img src="https://wsrv.nl/?url=github.com/Carla-s-Romero.png&w=400&h=400&fit=cover&mask=circle" width="80" alt="Carla Romero" />
   </a>
 
   <a href="https://github.com/gavvdev">
-    <img src="https://wsrv.nl/?url=github.com/gavvdev.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Gabriela" />
+    <img src="https://wsrv.nl/?url=github.com/gavvdev.png&w=400&h=400&fit=cover&mask=circle" width="80" alt="Gabriela" />
   </a>
   
   <a href="https://github.com/LucasEmmanoel06">
-    <img src="https://wsrv.nl/?url=github.com/LucasEmmanoel06.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Lucas Emmanoel" />
+    <img src="https://wsrv.nl/?url=github.com/LucasEmmanoel06.png&w=400&h=400&fit=cover&mask=circle" width="80" alt="Lucas Emmanoel" />
   </a>
   
   <a href="https://github.com/VitorMarins">
-    <img src="https://wsrv.nl/?url=github.com/VitorMarins.png&w=400&h=400&fit=cover&mask=circle" width="150" alt="Vitor Marins" />
+    <img src="https://wsrv.nl/?url=github.com/VitorMarins.png&w=400&h=400&fit=cover&mask=circle" width="80" alt="Vitor Marins" />
   </a>
 </div>
 
